@@ -17,6 +17,5 @@ create table public.addresses
     street             character varying(255),
     employee_id        integer,
     foreign key (employee_id) references public.users (id)
->>>>>>> 331f70078014ef343493f1f823fec36a10ae4ab0
 );
 
