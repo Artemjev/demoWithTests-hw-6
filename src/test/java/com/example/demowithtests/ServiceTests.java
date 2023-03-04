@@ -3,6 +3,7 @@ package com.example.demowithtests;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.repository.EmployeeRepository;
 import com.example.demowithtests.service.EmployeeServiceBean;
+import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
@@ -10,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +54,7 @@ public class ServiceTests {
         verify(employeeRepository).findById(employee.getId());
     }
 
-    @Test(expected = EntityNotFoundException.class)
+    @Test(expected = ResourceNotFoundException.class)
     public void should_throw_exception_when_employee_doesnt_exist() {
         Employee employee = new Employee();
         employee.setId(89);

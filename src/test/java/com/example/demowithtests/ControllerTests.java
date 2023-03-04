@@ -2,10 +2,13 @@ package com.example.demowithtests;
 
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.repository.EmployeeRepository;
+import com.example.demowithtests.service.EmployeeService;
+import com.example.demowithtests.util.config.EmployeeConverter;
 import com.example.demowithtests.web.Controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Ignore;
-import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest(Controller.class)
 public class ControllerTests {
+    @MockBean
+    EmployeeService employeeService;
+    @MockBean
+    EmployeeConverter converter;
 
     @Autowired
     MockMvc mockMvc;
@@ -39,6 +46,11 @@ public class ControllerTests {
 
     @MockBean
     EmployeeRepository employeeRepository;
+
+    @Test
+    public void main_test() throws Exception {
+
+    }
 
     @Ignore
     @Test
