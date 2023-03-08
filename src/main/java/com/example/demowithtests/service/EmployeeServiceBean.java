@@ -200,6 +200,18 @@ public class EmployeeServiceBean implements EmployeeService {
         return employeeRepository.findAllWhereIsActiveAddressByCountry(country, pageable);
     }
 
+    //---------------------------------------------------------------------------------------
+    //    My hw-3
+    @Override
+    public Page<Employee> getAllActive(Pageable pageable) {
+        return employeeRepository.findAllActive(pageable);
+    }
+
+    @Override
+    public Page<Employee> getAllDeleted(Pageable pageable) {
+        return employeeRepository.findAllDeleted(pageable);
+    }
+
 //    @Override
 //    public List<Employee> selectWhereIsVisibleIsNull() {
 //        var employees = employeeRepository.queryEmployeeByIsVisibleIsNull();

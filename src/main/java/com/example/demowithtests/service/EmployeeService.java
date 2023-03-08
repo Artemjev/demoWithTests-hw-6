@@ -57,6 +57,10 @@ public interface EmployeeService {
 
     Page<Employee> getActiveAddressesByCountry(String country, Pageable pageable);
 
+    Page<Employee> getAllActive(Pageable pageable);
+
+    Page<Employee> getAllDeleted(Pageable pageable);
+
 //    List<Employee> selectWhereIsVisibleIsNull();
 
 //    List<Employee> selectEmployeeByIsPrivateIsNull();

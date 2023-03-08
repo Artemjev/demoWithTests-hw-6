@@ -22,6 +22,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     Page<Employee> findByCountryContaining(String country, Pageable pageable);
 
+
+    // Метод Ярослава (hw-3).
     @Query(value = "select * from users join addresses on users.id = addresses.employee_id " +
             "where users.gender = :gender and addresses.country = :country", nativeQuery = true)
     List<Employee> findByGender(String gender, String country);
@@ -31,9 +33,19 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     @Query("select e from Employee e join e.addresses a where a.addressHasActive = true and a.country = :country")
     Page<Employee> findAllWhereIsActiveAddressByCountry(String country, Pageable pageable);
 
+    //---------------------------------------------------------------
+    //    My hw-3
+    @Query(value = "select * from users where users.is_deleted = true", nativeQuery = true)
+    Page<Employee> findAllActive(Pageable pageable);
+
+    @Query(value = "select * from users where users.is_deleted = false", nativeQuery = true)
+    Page<Employee> findAllDeleted(Pageable pageable);
+
+    //---------------------------------------------------------------
     //    List<Employee> queryEmployeeByIsVisibleIsNull(); - код Ярослава, относится к более поздним дз.
     List<Employee> queryEmployeeByIsDeletedIsNull();
 
     List<Employee> queryEmployeeByIsPrivateIsNull(); //- код Ярослава, относится к более поздним дз.
+
 
 }

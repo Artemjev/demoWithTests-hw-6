@@ -137,24 +137,44 @@ public class Controller {
         return employeeService.findEmails();
     }
 
+    // Метод Ярослава (hw-3)
     @GetMapping("/users/byGenderAndCountry")
     @ResponseStatus(HttpStatus.OK)
     public List<Employee> readByGender(@RequestParam Gender gender, @RequestParam String country) {
         return employeeService.getByGender(gender, country);
     }
 
-    // Метод Ярослава (hw-3), который ищет активные адреса.
-    // Передаем страну и получаем список работников, у которых активный адрес в этой стране.
-    @GetMapping("/users/active")
+    // Метод Ярослава (hw-3)
+    @GetMapping("/users/has-active-address")
     @ResponseStatus(HttpStatus.OK)
     public Page<Employee> readActiveAddressesByCountry(@RequestParam String country,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "5") int size) {
-                Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-                return employeeService.getActiveAddressesByCountry(country, pageable);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        return employeeService.getActiveAddressesByCountry(country, pageable);
+    }
+
+    //---------------------------------------------------------------------------------------
+    //    My hw-3
+
+    @GetMapping("/users/active")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<Employee>  getAllActiveUsers(@RequestParam(defaultValue = "0") int page,
+                                          @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        return employeeService.getAllActive(pageable);
+    }
+
+    @GetMapping("/users/deleted")
+    @ResponseStatus(HttpStatus.OK)
+    public Page<Employee>  getAllDeletedUsers(@RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+        return employeeService.getAllDeleted(pageable);
     }
 
 
+//---------------------------------------------------------------------------------------
 //    Код Ярослава, относится к более поздним дз:
 
 //    @GetMapping("/users/procVisible")
