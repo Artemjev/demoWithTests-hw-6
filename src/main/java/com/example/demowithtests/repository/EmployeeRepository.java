@@ -35,10 +35,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     //---------------------------------------------------------------
     //    My hw-3
-    @Query(value = "select * from users where users.is_deleted = true", nativeQuery = true)
+    @Query("select e from Employee e where e.isDeleted = false")
     Page<Employee> findAllActive(Pageable pageable);
 
-    @Query(value = "select * from users where users.is_deleted = false", nativeQuery = true)
+    @Query("select e from Employee e where e.isDeleted = true")
     Page<Employee> findAllDeleted(Pageable pageable);
 
     //---------------------------------------------------------------
