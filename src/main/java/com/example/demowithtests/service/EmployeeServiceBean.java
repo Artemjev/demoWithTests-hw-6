@@ -3,9 +3,7 @@ package com.example.demowithtests.service;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.repository.EmployeeRepository;
-import com.example.demowithtests.util.exception.ResourceIsPrivateException;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
-import com.example.demowithtests.util.exception.ResourceNotVisibleException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,13 +37,15 @@ public class EmployeeServiceBean implements EmployeeService {
         var employees = employeeRepository.findAll();
         employees.stream().forEach(employee -> {
             if (employee.getIsPrivate() == Boolean.TRUE || employee.getIsPrivate() == null)
-                setEmployeePrivateFields(employee);
+                // добавил в параметры значение, которое нужно установить для гибкости (оно же может 
+                // менять значение), что бы потом не дублировать код.
+                hideEmployeeDetails(employee);
         });
         log.info("setEmployeePrivateFields() Service - end:  = size {}", employees.size());
         return employees;
     }
 
-    private void setEmployeePrivateFields(Employee employee) {
+    private void hideEmployeeDetails(Employee employee) {
         log.debug("setEmployeePrivateFields() Service - start: id = {}", employee.getId());
         employee.setName("is hidden");
         employee.setEmail("is hidden");
@@ -61,7 +61,7 @@ public class EmployeeServiceBean implements EmployeeService {
         Page<Employee> list = employeeRepository.findAll(pageable);
         list.stream().forEach(employee -> {
             if (employee.getIsPrivate() == Boolean.TRUE || employee.getIsPrivate() == null)
-                setEmployeePrivateFields(employee);
+                hideEmployeeDetails(employee);
         });
         log.debug("getAllWithPagination() - end: list = {}", list);
         return list;
@@ -73,31 +73,33 @@ public class EmployeeServiceBean implements EmployeeService {
         var employee = employeeRepository.findById(id)
                 // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
                 .orElseThrow(ResourceNotFoundException::new);
-        changeVisibleStatus(employee);
-        changePrivateStatus(employee);
-        if (!employee.getIsVisible()) throw new ResourceNotVisibleException();
-        if (employee.getIsPrivate()) throw new ResourceIsPrivateException();
-        log.info("getById(Integer id) Service - end:  = employee {}", employee);
+
+//        Код Ярослава, относится к более поздним дз:
+//        changeVisibleStatus(employee);
+//        changePrivateStatus(employee);
+//        if (!employee.getIsVisible()) throw new ResourceNotVisibleException();
+//        if (employee.getIsPrivate()) throw new ResourceIsPrivateException();
+//        log.info("getById(Integer id) Service - end:  = employee {}", employee);
         return employee;
     }
 
-    private void changePrivateStatus(Employee employee) {
-        log.info("changePrivateStatus() Service - start: id = {}", employee.getId());
-        if (employee.getIsPrivate() == null) {
-            employee.setIsPrivate(Boolean.TRUE);
-            employeeRepository.save(employee);
-        }
-        log.info("changePrivateStatus() Service - end: IsPrivate = {}", employee.getIsPrivate());
-    }
-
-    private void changeVisibleStatus(Employee employee) {
-        log.info("changeVisibleStatus() Service - start: id = {}", employee.getId());
-        if (employee.getIsVisible() == null) {
-            employee.setIsVisible(Boolean.TRUE);
-            employeeRepository.save(employee);
-        }
-        log.info("changeVisibleStatus() Service - end: isVisible = {}", employee.getIsVisible());
-    }
+//    private void changePrivateStatus(Employee employee) {
+//        log.info("changePrivateStatus() Service - start: id = {}", employee.getId());
+//        if (employee.getIsPrivate() == null) {
+//            employee.setIsPrivate(Boolean.TRUE);
+//            employeeRepository.save(employee);
+//        }
+//        log.info("changePrivateStatus() Service - end: IsPrivate = {}", employee.getIsPrivate());
+//    }
+//
+//    private void changeVisibleStatus(Employee employee) {
+//        log.info("changeVisibleStatus() Service - start: id = {}", employee.getId());
+//        if (employee.getIsVisible() == null) {
+//            employee.setIsVisible(Boolean.TRUE);
+//            employeeRepository.save(employee);
+//        }
+//        log.info("changeVisibleStatus() Service - end: isVisible = {}", employee.getIsVisible());
+//    }
 
     @Override
     public Employee updateById(Integer id, Employee employee) {
@@ -106,8 +108,7 @@ public class EmployeeServiceBean implements EmployeeService {
                     entity.setName(employee.getName());
                     entity.setEmail(employee.getEmail());
                     entity.setCountry(employee.getCountry());
-                    entity.setIsPrivate(employee.getIsPrivate());
-                    /// TODO: 01.03.2023 isVisible do not update Jira - 5544
+                        entity.setIsDeleted(employee.getIsDeleted());
                     return employeeRepository.save(entity);
                 })
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
@@ -115,12 +116,9 @@ public class EmployeeServiceBean implements EmployeeService {
 
     @Override
     public void removeById(Integer id) {
-        //repository.deleteById(id);
         Employee employee = employeeRepository.findById(id)
-                // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
                 .orElseThrow(ResourceNotFoundException::new);
-        employee.setIsVisible(Boolean.FALSE);
-        //employeeRepository.delete(employee);
+        employee.setIsDeleted(Boolean.FALSE);
         employeeRepository.save(employee);
     }
 
@@ -129,16 +127,10 @@ public class EmployeeServiceBean implements EmployeeService {
         employeeRepository.deleteAll();
     }
 
-    /*@Override
-    public Page<Employee> findByCountryContaining(String country, Pageable pageable) {
-        return employeeRepository.findByCountryContaining(country, pageable);
-    }*/
-
     @Override
-    public Page<Employee> findByCountryContaining(String country, int page, int size, List<String> sortList, String sortOrder) {
-        // create Pageable object using the page, size and sort details
+    public Page<Employee> findByCountryContaining(String country, int page, int size, List<String> sortList, String
+            sortOrder) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(createSortOrder(sortList, sortOrder)));
-        // fetch the page object by additionally passing pageable with the filters
         return employeeRepository.findByCountryContaining(country, pageable);
     }
 
@@ -163,11 +155,6 @@ public class EmployeeServiceBean implements EmployeeService {
         List<String> countries = employeeList.stream()
                 .map(country -> country.getCountry())
                 .collect(Collectors.toList());
-        /*List<String> countries = employeeList.stream()
-                .map(Employee::getCountry)
-                //.sorted(Comparator.naturalOrder())
-                .collect(Collectors.toList());*/
-
         log.info("getAllEmployeeCountry() - end: countries = {}", countries);
         return countries;
     }
@@ -197,6 +184,7 @@ public class EmployeeServiceBean implements EmployeeService {
         return Optional.ofNullable(opt);
     }
 
+//    Делали в классе (но это не точно!)
     @Override
     public List<Employee> getByGender(Gender gender, String country) {
         /*System.err.println("service getByGender start: gender: " + gender + " country: " + country);*/
@@ -205,24 +193,26 @@ public class EmployeeServiceBean implements EmployeeService {
         return employees;
     }
 
+    // Метод Ярослава (hw-3), который ищет активные адреса.
+    // Передаем страну и получаем список работников, у которых активный адрес в этой стране.
     @Override
     public Page<Employee> getActiveAddressesByCountry(String country, Pageable pageable) {
         return employeeRepository.findAllWhereIsActiveAddressByCountry(country, pageable);
     }
 
-    @Override
-    public List<Employee> selectWhereIsVisibleIsNull() {
-        var employees = employeeRepository.queryEmployeeByIsVisibleIsNull();
-        for (Employee employee : employees) employee.setIsVisible(Boolean.TRUE);
-        employeeRepository.saveAll(employees);
-        return employeeRepository.queryEmployeeByIsVisibleIsNull();
-    }
+//    @Override
+//    public List<Employee> selectWhereIsVisibleIsNull() {
+//        var employees = employeeRepository.queryEmployeeByIsVisibleIsNull();
+//        for (Employee employee : employees) employee.setIsVisible(Boolean.TRUE);
+//        employeeRepository.saveAll(employees);
+//        return employeeRepository.queryEmployeeByIsVisibleIsNull();
+//    }
 
-    @Override
-    public List<Employee> selectEmployeeByIsPrivateIsNull() {
-        var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
-        employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
-        employeeRepository.saveAll(employees);
-        return employeeRepository.queryEmployeeByIsPrivateIsNull();
-    }
+//    @Override
+//    public List<Employee> selectEmployeeByIsPrivateIsNull() {
+//        var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
+//        employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
+//        employeeRepository.saveAll(employees);
+//        return employeeRepository.queryEmployeeByIsPrivateIsNull();
+//    }
 }

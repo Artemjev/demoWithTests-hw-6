@@ -150,6 +150,18 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>8.4.1</version>
             </plugin>-->
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+<!--                <version>8.5.13</version>-->
+                <configuration>
+                    <url>jdbc:postgresql://localhost:5432/employee</url>
+                    <user>postgres</user>
+                    <password>0000</password>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

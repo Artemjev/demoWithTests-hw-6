@@ -17,7 +17,8 @@ import java.util.Set;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
     private String country;
@@ -27,7 +28,15 @@ public class Employee {
     private Set<Address> addresses = new HashSet<>();
     @Enumerated(EnumType.STRING)
     private Gender gender;
-    private Boolean isVisible = Boolean.TRUE;
+    private Boolean isDeleted = Boolean.TRUE;
+
+    //    не бизнесовое поле Ярослава. Если true, данные клиента скрыты.
     private Boolean isPrivate = Boolean.FALSE;
+
+    //    мое не бизнесовое поле.
+    //    Его суть: после заполнении данных о работнике, письмо с подверждением  данных
+    //    отправляется на его email. Пока работник их не подтвердит, его учетная запись будет неактивна в системе
+    //    (хз чего, может быть какого-нибудь завода)
+    private Boolean isConfirmed = Boolean.FALSE;
 
 }

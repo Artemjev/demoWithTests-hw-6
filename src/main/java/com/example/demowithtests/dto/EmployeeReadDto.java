@@ -3,6 +3,8 @@ package com.example.demowithtests.dto;
 import com.example.demowithtests.domain.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -29,6 +31,7 @@ public class EmployeeReadDto {
     //todo: dfhgjkdfhg Jira - 5544
     public Date date = Date.from(Instant.now());
 
+    @Enumerated(EnumType.STRING)
     public Gender gender;
 
     public Boolean isVisible;

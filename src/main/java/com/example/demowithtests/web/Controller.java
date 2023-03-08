@@ -12,13 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ma.glasnost.orika.Converter;
-import ma.glasnost.orika.Mapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -146,24 +143,29 @@ public class Controller {
         return employeeService.getByGender(gender, country);
     }
 
+    // Метод Ярослава (hw-3), который ищет активные адреса.
+    // Передаем страну и получаем список работников, у которых активный адрес в этой стране.
     @GetMapping("/users/active")
     @ResponseStatus(HttpStatus.OK)
     public Page<Employee> readActiveAddressesByCountry(@RequestParam String country,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-        return employeeService.getActiveAddressesByCountry(country, pageable);
+                Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
+                return employeeService.getActiveAddressesByCountry(country, pageable);
     }
 
-    @GetMapping("/users/procVisible")
-    @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getWhereIsVisibleIsNull() {
-        return employeeService.selectWhereIsVisibleIsNull();
-    }
 
-    @GetMapping("/users/procPrivate")
-    @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getEmployeeByIsPrivateIsNull() {
-        return employeeService.selectEmployeeByIsPrivateIsNull();
-    }
+//    Код Ярослава, относится к более поздним дз:
+
+//    @GetMapping("/users/procVisible")
+//    @ResponseStatus(HttpStatus.OK)
+//    public List<Employee> getWhereIsVisibleIsNull() {
+//        return employeeService.selectWhereIsVisibleIsNull();
+//    }
+//
+//    @GetMapping("/users/procPrivate")
+//    @ResponseStatus(HttpStatus.OK)
+//    public List<Employee> getEmployeeByIsPrivateIsNull() {
+//        return employeeService.selectEmployeeByIsPrivateIsNull();
+//    }
 }

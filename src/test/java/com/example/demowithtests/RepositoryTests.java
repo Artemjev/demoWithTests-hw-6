@@ -72,21 +72,14 @@ public class RepositoryTests {
     @Order(5)
     @Rollback(value = false)
     public void deleteEmployeeTest() {
-
         Employee employee = employeeRepository.findById(1).get();
-
         employeeRepository.delete(employee);
-
         //repository.deleteById(1L);
-
         Employee employee1 = null;
-
         Optional<Employee> optionalAuthor = Optional.ofNullable(employeeRepository.findByName("Martin"));
-
         if (optionalAuthor.isPresent()) {
             employee1 = optionalAuthor.get();
         }
-
         Assertions.assertThat(employee1).isNull();
     }
 

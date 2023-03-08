@@ -11,7 +11,6 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Repository
-//@Component
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     Employee findByName(String name);
@@ -27,11 +26,14 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
             "where users.gender = :gender and addresses.country = :country", nativeQuery = true)
     List<Employee> findByGender(String gender, String country);
 
+    // Метод Ярослава (hw-3), который ищет активные адреса.
+    // Передаем страну и получаем список работников, у которых активный адрес в этой стране.
     @Query("select e from Employee e join e.addresses a where a.addressHasActive = true and a.country = :country")
     Page<Employee> findAllWhereIsActiveAddressByCountry(String country, Pageable pageable);
 
-    List<Employee> queryEmployeeByIsVisibleIsNull();
+    //    List<Employee> queryEmployeeByIsVisibleIsNull(); - код Ярослава, относится к более поздним дз.
+    List<Employee> queryEmployeeByIsDeletedIsNull();
 
-    List<Employee> queryEmployeeByIsPrivateIsNull();
+    List<Employee> queryEmployeeByIsPrivateIsNull(); //- код Ярослава, относится к более поздним дз.
 
 }
