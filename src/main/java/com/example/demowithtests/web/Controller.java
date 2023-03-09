@@ -6,6 +6,7 @@ import com.example.demowithtests.dto.EmployeeDto;
 import com.example.demowithtests.dto.EmployeeReadDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.util.config.EmployeeConverter;
+import com.example.demowithtests.util.exception.NoSuchEmployeeException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,10 +31,8 @@ import java.util.Optional;
 @Slf4j
 @Tag(name = "Employee", description = "Employee API")
 public class Controller {
-
     private final EmployeeService employeeService;
     private final EmployeeConverter converter;
-//    private final SmtpMailer smtpMailer;
 
     //Операция сохранения юзера в базу данных
     @PostMapping("/users")
@@ -80,6 +79,13 @@ public class Controller {
     public EmployeeReadDto getEmployeeById(@PathVariable Integer id) {
         log.debug("getEmployeeById() Controller - start: id = {}", id);
         var employee = employeeService.getById(id);
+        //hw-6
+        //---------------------------------------------------------------------------------------
+        //  if (employee == null) {
+        //     throw new NoSuchEmployeeException("There is no employee with ID = " + id + " in database");
+        //  } - в сервисе буду проверять и, если нужно, кидать исключения(?)
+        //---------------------------------------------------------------------------------------
+
         log.debug("getById() Controller - to dto start: id = {}", id);
         var dto = converter.toReadDto(employee);
         log.debug("getEmployeeById() Controller - end: name = {}", dto.name);
@@ -152,20 +158,22 @@ public class Controller {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return employeeService.getActiveAddressesByCountry(country, pageable);
     }
+
     //---------------------------------------------------------------------------------------
     @GetMapping("/users/proc-is-deleted")
     @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getWhereIsDeletedIsNull() {
-        return employeeService.getWhereIsDeletedIsNull();
+    public List<Employee> handleEmployeesWithIsDeletedFieldIsNull() {
+        return employeeService.handleEmployeesWithIsDeletedFieldIsNull();
     }
 
     @GetMapping("/users/proc-is-private")
     @ResponseStatus(HttpStatus.OK)
-    public List<Employee> getEmployeeByIsPrivateIsNull() {
-        return employeeService.getEmployeeByIsPrivateIsNull();
+    public List<Employee> handleEmployeesWithIsPrivateFieldIsNull() {
+        return employeeService.handleEmployeesWithIsPrivateFieldIsNull();
     }
+
+    //hw-5
     //---------------------------------------------------------------------------------------
-    //    My hw-5
     @GetMapping("/users/active")
     @ResponseStatus(HttpStatus.OK)
     public Page<Employee> getAllActiveUsers(@RequestParam(defaultValue = "0") int page,
@@ -181,7 +189,8 @@ public class Controller {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return employeeService.getAllDeleted(pageable);
     }
-    //    My hw-6
+
+    //    hw-6
     //---------------------------------------------------------------------------------------
     // Метод отправляет письмо на почту с подтверждением.
     // Из письма юзер должен дернуть метод ЙЙЙ, который поменяет статус is_confirmed поля бд.
@@ -195,16 +204,14 @@ public class Controller {
 //    @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseStatus(HttpStatus.OK)
     public void sendConfirm(@PathVariable Integer id) {
-        employeeService.sendConfirm(id);
-        System.out.println("qqqq");
+        employeeService.sendMailConfirm(id);
     }
 
-//    @PatchMapping("/users/{id}/confirmed")
+    //    @PatchMapping("/users/{id}/confirmed")
     @GetMapping("/users/{id}/confirmed")// Get - костыль, так из письма проще этот эндпоинт дергать.
     @ResponseStatus(HttpStatus.OK)
     public void confirm(@PathVariable Integer id) {
         employeeService.confirm(id);
     }
-
 
 }

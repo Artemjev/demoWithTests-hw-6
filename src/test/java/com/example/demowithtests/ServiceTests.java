@@ -3,6 +3,7 @@ package com.example.demowithtests;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.repository.EmployeeRepository;
 import com.example.demowithtests.service.EmployeeServiceBean;
+import com.example.demowithtests.util.exception.NoSuchEmployeeException;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +55,7 @@ public class ServiceTests {
         verify(employeeRepository).findById(employee.getId());
     }
 
-    @Test(expected = ResourceNotFoundException.class)
+    @Test(expected = NoSuchEmployeeException.class)
     public void should_throw_exception_when_employee_doesnt_exist() {
         Employee employee = new Employee();
         employee.setId(89);

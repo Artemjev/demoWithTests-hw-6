@@ -1,6 +1,7 @@
 package com.example.demowithtests.util.mail;
 
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.util.exception.EmailSendingException;
 import org.springframework.stereotype.Component;
 
 import javax.mail.*;
@@ -24,8 +25,6 @@ public final class SmtpMailer implements Mailer {
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.host", host);
         props.put("mail.smtp.port", port);
-
-
     }
 
     //    @Override
@@ -61,7 +60,7 @@ public final class SmtpMailer implements Mailer {
             Transport.send(message);
             System.out.println("Email sent successfully!");
         } catch (MessagingException exception) {
-            throw new RuntimeException("Sending mail issue.", exception);
+            throw new EmailSendingException("Sending mail from " + username + " to " + e.getEmail() + " issue.");
         }
 
     }

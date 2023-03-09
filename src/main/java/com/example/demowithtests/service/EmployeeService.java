@@ -41,11 +41,11 @@ public interface EmployeeService {
     Optional<String> findEmails();
     List<Employee> getByGender(Gender gender, String country);
     Page<Employee> getActiveAddressesByCountry(String country, Pageable pageable);
-    List<Employee> getWhereIsDeletedIsNull();
-    List<Employee> getEmployeeByIsPrivateIsNull();
+    List<Employee> handleEmployeesWithIsDeletedFieldIsNull();
+    List<Employee> handleEmployeesWithIsPrivateFieldIsNull();
     Page<Employee> getAllActive(Pageable pageable);
     Page<Employee> getAllDeleted(Pageable pageable);
-    void sendConfirm(Integer id);
+    void sendMailConfirm(Integer id);
     void confirm(Integer id);
 
 

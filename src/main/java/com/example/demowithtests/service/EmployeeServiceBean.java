@@ -3,6 +3,7 @@ package com.example.demowithtests.service;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.repository.EmployeeRepository;
+import com.example.demowithtests.util.exception.NoSuchEmployeeException;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import com.example.demowithtests.util.mail.SmtpMailer;
 import lombok.AllArgsConstructor;
@@ -73,35 +74,38 @@ public class EmployeeServiceBean implements EmployeeService {
     public Employee getById(Integer id) {
         log.info("getById(Integer id) Service - start: id = {}", id);
         var employee = employeeRepository.findById(id)
-                // .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
-                .orElseThrow(ResourceNotFoundException::new);
+                .orElseThrow(() ->
+                        new NoSuchEmployeeException("There is no employee with ID = " + id + " in database"));
 
-//        Код Ярослава, относится к более поздним дз:
-//        changeVisibleStatus(employee);
-//        changePrivateStatus(employee);
+
+        //-------------------------------------
+        // Код Ярослава, относится к более поздним дз:
+        changeActiveStatus(employee);
+        changePrivateStatus(employee);
 //        if (!employee.getIsVisible()) throw new ResourceNotVisibleException();
 //        if (employee.getIsPrivate()) throw new ResourceIsPrivateException();
 //        log.info("getById(Integer id) Service - end:  = employee {}", employee);
         return employee;
     }
 
-//    private void changePrivateStatus(Employee employee) {
-//        log.info("changePrivateStatus() Service - start: id = {}", employee.getId());
-//        if (employee.getIsPrivate() == null) {
-//            employee.setIsPrivate(Boolean.TRUE);
-//            employeeRepository.save(employee);
-//        }
-//        log.info("changePrivateStatus() Service - end: IsPrivate = {}", employee.getIsPrivate());
-//    }
-//
-//    private void changeVisibleStatus(Employee employee) {
-//        log.info("changeVisibleStatus() Service - start: id = {}", employee.getId());
-//        if (employee.getIsVisible() == null) {
-//            employee.setIsVisible(Boolean.TRUE);
-//            employeeRepository.save(employee);
-//        }
-//        log.info("changeVisibleStatus() Service - end: isVisible = {}", employee.getIsVisible());
-//    }
+    private void changePrivateStatus(Employee employee) {
+        log.info("changePrivateStatus() Service - start: id = {}", employee.getId());
+        if (employee.getIsPrivate() == null) {
+            employee.setIsPrivate(Boolean.TRUE);
+            employeeRepository.save(employee);
+        }
+        log.info("changePrivateStatus() Service - end: IsPrivate = {}", employee.getIsPrivate());
+    }
+
+    //
+    private void changeActiveStatus(Employee employee) {
+        log.info("changeActiveStatus() Service - start: id = {}", employee.getId());
+        if (employee.getIsDeleted() == null) {
+            employee.setIsDeleted(Boolean.FALSE);
+            employeeRepository.save(employee);
+        }
+        log.info("changeActiveStatus() Service - end: isVisible = {}", employee.getIsDeleted());
+    }
 
     @Override
     public Employee updateById(Integer id, Employee employee) {
@@ -186,7 +190,6 @@ public class EmployeeServiceBean implements EmployeeService {
         return Optional.ofNullable(opt);
     }
 
-    //    Делали в классе (но это не точно!)
     @Override
     public List<Employee> getByGender(Gender gender, String country) {
         /*System.err.println("service getByGender start: gender: " + gender + " country: " + country);*/
@@ -195,15 +198,14 @@ public class EmployeeServiceBean implements EmployeeService {
         return employees;
     }
 
-    // Метод Ярослава (hw-3), который ищет активные адреса.
-    // Передаем страну и получаем список работников, у которых активный адрес в этой стране.
     @Override
     public Page<Employee> getActiveAddressesByCountry(String country, Pageable pageable) {
         return employeeRepository.findAllWhereIsActiveAddressByCountry(country, pageable);
     }
 
+    //---------------------------------------------------------------------------------------
     @Override
-    public List<Employee> getWhereIsDeletedIsNull() {
+    public List<Employee> handleEmployeesWithIsDeletedFieldIsNull() {
         var employees = employeeRepository.queryEmployeeByIsDeletedIsNull();
         for (Employee employee : employees) employee.setIsDeleted(Boolean.FALSE);
         employeeRepository.saveAll(employees);
@@ -211,15 +213,15 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     @Override
-    public List<Employee> getEmployeeByIsPrivateIsNull() {
+    public List<Employee> handleEmployeesWithIsPrivateFieldIsNull() {
         var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
         employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
         employeeRepository.saveAll(employees);
         return employeeRepository.queryEmployeeByIsPrivateIsNull();
     }
 
+    //    My hw-5
     //---------------------------------------------------------------------------------------
-    //    My hw-3
     @Override
     public Page<Employee> getAllActive(Pageable pageable) {
         return employeeRepository.findAllActive(pageable);
@@ -230,8 +232,10 @@ public class EmployeeServiceBean implements EmployeeService {
         return employeeRepository.findAllDeleted(pageable);
     }
 
+    //    My hw-6
+    //---------------------------------------------------------------------------------------
     @Override
-    public void sendConfirm(Integer id) {
+    public void sendMailConfirm(Integer id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(ResourceNotFoundException::new);
         smtpMailer.send(employee);
@@ -245,6 +249,7 @@ public class EmployeeServiceBean implements EmployeeService {
         employee.setIsConfirmed(Boolean.TRUE);
         employeeRepository.save(employee);
     }
+    //---------------------------------------------------------------------------------------
 }
 
 
