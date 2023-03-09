@@ -47,11 +47,6 @@ public class ControllerTests {
     @MockBean
     EmployeeRepository employeeRepository;
 
-    @Test
-    public void main_test() throws Exception {
-
-    }
-
     @Ignore
     @Test
     public void createEmployee_success() throws Exception {

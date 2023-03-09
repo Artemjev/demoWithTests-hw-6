@@ -28,7 +28,7 @@ public class Employee {
     private Set<Address> addresses = new HashSet<>();
     @Enumerated(EnumType.STRING)
     private Gender gender;
-    private Boolean isDeleted = Boolean.TRUE;
+    private Boolean isDeleted = Boolean.FALSE;
 
     //    не бизнесовое поле Ярослава. Если true, данные клиента скрыты.
     private Boolean isPrivate = Boolean.FALSE;

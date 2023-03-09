@@ -4,6 +4,7 @@ import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.repository.EmployeeRepository;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
+import com.example.demowithtests.util.mail.SmtpMailer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,8 +24,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class EmployeeServiceBean implements EmployeeService {
-
     private final EmployeeRepository employeeRepository;
+
+    private final SmtpMailer smtpMailer;
 
     @Override
     public Employee create(Employee employee) {
@@ -108,7 +110,7 @@ public class EmployeeServiceBean implements EmployeeService {
                     entity.setName(employee.getName());
                     entity.setEmail(employee.getEmail());
                     entity.setCountry(employee.getCountry());
-                        entity.setIsDeleted(employee.getIsDeleted());
+                    entity.setIsDeleted(employee.getIsDeleted());
                     return employeeRepository.save(entity);
                 })
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found with id = " + id));
@@ -184,7 +186,7 @@ public class EmployeeServiceBean implements EmployeeService {
         return Optional.ofNullable(opt);
     }
 
-//    Делали в классе (но это не точно!)
+    //    Делали в классе (но это не точно!)
     @Override
     public List<Employee> getByGender(Gender gender, String country) {
         /*System.err.println("service getByGender start: gender: " + gender + " country: " + country);*/
@@ -200,6 +202,22 @@ public class EmployeeServiceBean implements EmployeeService {
         return employeeRepository.findAllWhereIsActiveAddressByCountry(country, pageable);
     }
 
+    @Override
+    public List<Employee> getWhereIsDeletedIsNull() {
+        var employees = employeeRepository.queryEmployeeByIsDeletedIsNull();
+        for (Employee employee : employees) employee.setIsDeleted(Boolean.FALSE);
+        employeeRepository.saveAll(employees);
+        return employeeRepository.queryEmployeeByIsDeletedIsNull();
+    }
+
+    @Override
+    public List<Employee> getEmployeeByIsPrivateIsNull() {
+        var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
+        employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
+        employeeRepository.saveAll(employees);
+        return employeeRepository.queryEmployeeByIsPrivateIsNull();
+    }
+
     //---------------------------------------------------------------------------------------
     //    My hw-3
     @Override
@@ -212,19 +230,22 @@ public class EmployeeServiceBean implements EmployeeService {
         return employeeRepository.findAllDeleted(pageable);
     }
 
-//    @Override
-//    public List<Employee> selectWhereIsVisibleIsNull() {
-//        var employees = employeeRepository.queryEmployeeByIsVisibleIsNull();
-//        for (Employee employee : employees) employee.setIsVisible(Boolean.TRUE);
-//        employeeRepository.saveAll(employees);
-//        return employeeRepository.queryEmployeeByIsVisibleIsNull();
-//    }
+    @Override
+    public void sendConfirm(Integer id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(ResourceNotFoundException::new);
+        smtpMailer.send(employee);
 
-//    @Override
-//    public List<Employee> selectEmployeeByIsPrivateIsNull() {
-//        var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
-//        employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
-//        employeeRepository.saveAll(employees);
-//        return employeeRepository.queryEmployeeByIsPrivateIsNull();
-//    }
+    }
+
+    @Override
+    public void confirm(Integer id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(ResourceNotFoundException::new);
+        employee.setIsConfirmed(Boolean.TRUE);
+        employeeRepository.save(employee);
+    }
 }
+
+
+

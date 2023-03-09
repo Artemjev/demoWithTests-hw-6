@@ -33,6 +33,7 @@ public class Controller {
 
     private final EmployeeService employeeService;
     private final EmployeeConverter converter;
+//    private final SmtpMailer smtpMailer;
 
     //Операция сохранения юзера в базу данных
     @PostMapping("/users")
@@ -137,14 +138,12 @@ public class Controller {
         return employeeService.findEmails();
     }
 
-    // Метод Ярослава (hw-3)
     @GetMapping("/users/byGenderAndCountry")
     @ResponseStatus(HttpStatus.OK)
     public List<Employee> readByGender(@RequestParam Gender gender, @RequestParam String country) {
         return employeeService.getByGender(gender, country);
     }
 
-    // Метод Ярослава (hw-3)
     @GetMapping("/users/has-active-address")
     @ResponseStatus(HttpStatus.OK)
     public Page<Employee> readActiveAddressesByCountry(@RequestParam String country,
@@ -153,39 +152,59 @@ public class Controller {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return employeeService.getActiveAddressesByCountry(country, pageable);
     }
-
     //---------------------------------------------------------------------------------------
-    //    My hw-3
+    @GetMapping("/users/proc-is-deleted")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Employee> getWhereIsDeletedIsNull() {
+        return employeeService.getWhereIsDeletedIsNull();
+    }
 
+    @GetMapping("/users/proc-is-private")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Employee> getEmployeeByIsPrivateIsNull() {
+        return employeeService.getEmployeeByIsPrivateIsNull();
+    }
+    //---------------------------------------------------------------------------------------
+    //    My hw-5
     @GetMapping("/users/active")
     @ResponseStatus(HttpStatus.OK)
-    public Page<Employee>  getAllActiveUsers(@RequestParam(defaultValue = "0") int page,
-                                          @RequestParam(defaultValue = "5") int size) {
+    public Page<Employee> getAllActiveUsers(@RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "5") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return employeeService.getAllActive(pageable);
     }
 
     @GetMapping("/users/deleted")
     @ResponseStatus(HttpStatus.OK)
-    public Page<Employee>  getAllDeletedUsers(@RequestParam(defaultValue = "0") int page,
+    public Page<Employee> getAllDeletedUsers(@RequestParam(defaultValue = "0") int page,
                                              @RequestParam(defaultValue = "5") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         return employeeService.getAllDeleted(pageable);
     }
+    //    My hw-6
+    //---------------------------------------------------------------------------------------
+    // Метод отправляет письмо на почту с подтверждением.
+    // Из письма юзер должен дернуть метод ЙЙЙ, который поменяет статус is_confirmed поля бд.
+    @GetMapping("/users/{id}/confirm")  //@PatchMapping("/users/{id}/confirm")
+    //Вопрос: если метод ничего не меняет в репозитории, но каждый раз при его вызове отправляется письмо клиенту,
+    //он индемпотентный?
+    //upd: походу, да.
+    //После 1го подтверждения (может быть отправлено из любого письма, в смысле по-порядку),мы меняем статус в бд.
+    //Последующие запросы на подтверждение состояние базы не меняют
+
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
+    public void sendConfirm(@PathVariable Integer id) {
+        employeeService.sendConfirm(id);
+        System.out.println("qqqq");
+    }
+
+//    @PatchMapping("/users/{id}/confirmed")
+    @GetMapping("/users/{id}/confirmed")// Get - костыль, так из письма проще этот эндпоинт дергать.
+    @ResponseStatus(HttpStatus.OK)
+    public void confirm(@PathVariable Integer id) {
+        employeeService.confirm(id);
+    }
 
 
-//---------------------------------------------------------------------------------------
-//    Код Ярослава, относится к более поздним дз:
-
-//    @GetMapping("/users/procVisible")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<Employee> getWhereIsVisibleIsNull() {
-//        return employeeService.selectWhereIsVisibleIsNull();
-//    }
-//
-//    @GetMapping("/users/procPrivate")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<Employee> getEmployeeByIsPrivateIsNull() {
-//        return employeeService.selectEmployeeByIsPrivateIsNull();
-//    }
 }
