@@ -3,8 +3,7 @@ package com.example.demowithtests.service;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.repository.EmployeeRepository;
-import com.example.demowithtests.util.exception.NoSuchEmployeeException;
-import com.example.demowithtests.util.exception.ResourceNotFoundException;
+import com.example.demowithtests.util.exception.*;
 import com.example.demowithtests.util.mail.SmtpMailer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -77,14 +76,18 @@ public class EmployeeServiceBean implements EmployeeService {
                 .orElseThrow(() ->
                         new NoSuchEmployeeException("There is no employee with ID = " + id + " in database"));
 
-
-        //-------------------------------------
-        // Код Ярослава, относится к более поздним дз:
         changeActiveStatus(employee);
         changePrivateStatus(employee);
-//        if (!employee.getIsVisible()) throw new ResourceNotVisibleException();
-//        if (employee.getIsPrivate()) throw new ResourceIsPrivateException();
-//        log.info("getById(Integer id) Service - end:  = employee {}", employee);
+
+        if (employee.getIsDeleted()) throw new ResourceNotVisibleException();
+
+        if (employee.getIsPrivate()) throw new ResourceIsPrivateException();
+
+        if (!employee.getIsConfirmed()) throw new EmployeeUnconfirmedDataException(
+                "Employee " + employee.getName() + " has to confirm data. Check " + employee.getEmail() + " mail please"
+        );
+
+        log.info("getById(Integer id) Service - end:  = employee {}", employee);
         return employee;
     }
 
