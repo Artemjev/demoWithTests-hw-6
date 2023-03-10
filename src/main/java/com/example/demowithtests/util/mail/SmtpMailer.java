@@ -15,7 +15,7 @@ public final class SmtpMailer implements Mailer {
     // Настройки для подключения к SMTP-серверу Gmail
     private final String host = "smtp.gmail.com";
     private final String username = "hilleljavaee2023@gmail.com";
-    private final String password = "qdrjzliussaasliv";
+    private final String password = "qdrjzliussaasliv-";
     private final int port = 587;
 
     public SmtpMailer() {
@@ -60,7 +60,7 @@ public final class SmtpMailer implements Mailer {
             Transport.send(message);
             System.out.println("Email sent successfully!");
         } catch (MessagingException exception) {
-            throw new EmailSendingException("Sending mail from " + username + " to " + e.getEmail() + " issue.");
+            throw new EmailSendingException("Sending mail from " + username + " to " + e.getEmail() + " failed.");
         }
 
     }

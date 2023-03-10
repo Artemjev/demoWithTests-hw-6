@@ -13,22 +13,23 @@ import java.util.Date;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-
     @ExceptionHandler(EmployeeUnconfirmedDataException.class)
-    public ResponseEntity<?> employeeUnconfirmedDataException(WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(
-                new Date(),
-                "Employee has to confirm data via mail",
+//    public ResponseEntity<ErrorDetails> employeeUnconfirmedDataException(WebRequest request) {
+    public ResponseEntity<ErrorDetails> employeeUnconfirmedDataException(EmployeeUnconfirmedDataException exception,
+                                                                         WebRequest request) {
+
+        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+                exception.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
     }
 
-
     @ExceptionHandler(EmailSendingException.class)
-    public ResponseEntity<?> emailSendingException(WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(
-                new Date(),
-                "Email sending failed",
+    public ResponseEntity<?> emailSendingException(EmailSendingException exception,
+                                                   WebRequest request) {
+
+        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+                exception.getMessage(),
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
     }
@@ -41,6 +42,7 @@ public class GlobalExceptionHandler {
                 request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
+
     //--------------------------------------------
     @ExceptionHandler(ResourceNotVisibleException.class)
     public ResponseEntity<?> resourceNotVisibleException(WebRequest request) {
